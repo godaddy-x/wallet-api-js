@@ -1,0 +1,45 @@
+{
+  "name": "@godaddy-x/wallet-api-js",
+  "version": "0.1.0",
+  "description": "Wallet API SDK for Node.js: OPS and MPC WebSocket integration.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "config",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --import tsx --test test/client.test.ts test/log-watch.test.ts test/trade-hook.test.ts test/app-login-sign.test.ts",
+    "test:integration": "npm run build && node --import tsx --test integration/connect.test.ts",
+    "test:btc-wallet-address": "npm run build && node --import tsx scripts/run-btc-wallet-address.mts",
+    "prepublishOnly": "npm run build"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@noble/post-quantum": "^0.6.1",
+    "crypto-js": "^4.2.0",
+    "json-bigint": "^1.0.0",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@types/crypto-js": "^4.2.2",
+    "@types/json-bigint": "^1.0.4",
+    "@types/node": "^22.13.10",
+    "@types/ws": "^8.18.1",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  },
+  "license": "MIT"
+}
