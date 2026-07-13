@@ -2,9 +2,11 @@
 /**
  * Run BTC wallet → account → address flow against a live OPS/MPC stack.
  *
- *   npm run build
+ *   npm run test:btc-wallet-address
+ *
+ * Or directly:
  *   set RUN_BTC_WALLET_ADDRESS=1
- *   node --import tsx integration/btc-wallet-address.test.ts
+ *   node --import tsx --test integration/btc-wallet-address.test.ts
  *
  * Optional env:
  *   TEST_OPS_DOMAIN, TEST_MPC_DOMAIN, TEST_APP_KEY
@@ -13,11 +15,13 @@
  */
 process.env.RUN_BTC_WALLET_ADDRESS ??= '1';
 
-import { run } from 'node:test';
-import { spec } from 'node:test/reporters';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
-const result = await run({
-  files: [new URL('../integration/btc-wallet-address.test.ts', import.meta.url)],
-});
-result.compose(new spec()).pipe(process.stdout);
-process.exitCode = result.ok ? 0 : 1;
+const testFile = fileURLToPath(new URL('../integration/btc-wallet-address.test.ts', import.meta.url));
+const result = spawnSync(
+  process.execPath,
+  ['--import', 'tsx', '--test', testFile],
+  { stdio: 'inherit', env: process.env },
+);
+process.exit(result.status ?? 1);

@@ -22,6 +22,11 @@ function isAlreadyExistsErr(error: unknown): boolean {
   );
 }
 
+function isAccountIndexMismatchErr(error: unknown): boolean {
+  const msg = String(error instanceof Error ? error.message : error).toLowerCase();
+  return msg.includes('accountindex mismatch');
+}
+
 function configHook(cfg: Config): void {
   if (!cfg.appKey?.trim()) {
     cfg.appKey = cfg.ops?.appKey;
@@ -122,29 +127,38 @@ test(
         // optional lookup
       }
 
-      const acc = await client.cliCreateAccount({
-        walletID: mpcWallet.walletID,
-        lastIndex: lastAccountIndex,
-      }) as CliCreateAccountRes;
-      assert.ok(acc.accountID, 'CliCreateAccount: missing accountID');
+      let acc: CliCreateAccountRes | undefined;
+      for (let attempt = 0; attempt < 4; attempt++) {
+        acc = await client.cliCreateAccount({
+          walletID: mpcWallet.walletID,
+          lastIndex: lastAccountIndex,
+        }) as CliCreateAccountRes;
+        assert.ok(acc.accountID, 'CliCreateAccount: missing accountID');
+        try {
+          await client.createAccount({
+            walletID: mpcWallet.walletID,
+            accountID: acc.accountID,
+            alias: `btc-acct-${Math.floor(Date.now() / 1000)}-${attempt}`,
+            symbol,
+            publicKey: acc.publicKey,
+            accountIndex: acc.accountIndex,
+            hdPath: acc.hdPath,
+            reqSigs: acc.reqSigs,
+          });
+          break;
+        } catch (error) {
+          if (isAlreadyExistsErr(error)) break;
+          if (isAccountIndexMismatchErr(error)) {
+            lastAccountIndex = Math.max(lastAccountIndex, Number(acc.accountIndex ?? -1));
+            continue;
+          }
+          throw error;
+        }
+      }
+      assert.ok(acc?.accountID, 'CliCreateAccount: missing accountID after retries');
       console.log(
         `CLI accountID=${acc.accountID} accountIndex=${acc.accountIndex} hdPath=${acc.hdPath} pub=${acc.publicKey}`,
       );
-
-      try {
-        await client.createAccount({
-          walletID: mpcWallet.walletID,
-          accountID: acc.accountID,
-          alias: `btc-acct-${Math.floor(Date.now() / 1000)}`,
-          symbol,
-          publicKey: acc.publicKey,
-          accountIndex: acc.accountIndex,
-          hdPath: acc.hdPath,
-          reqSigs: acc.reqSigs,
-        });
-      } catch (error) {
-        if (!isAlreadyExistsErr(error)) throw error;
-      }
       console.log(`OPS account created symbol=${symbol} accountID=${acc.accountID}`);
 
       const addrs = await client.cliCreateAddress({
