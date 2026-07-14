@@ -328,7 +328,35 @@ RUN_INTEGRATION=1 npm run test:integration
 RUN_BTC_WALLET_ADDRESS=1 npm run test:btc-wallet-address
 ```
 
-Set `TEST_OPS_DOMAIN`, `TEST_MPC_DOMAIN`, `TEST_APP_KEY` to override config during integration runs.
+### BTC scanner regression (parity with wallet-api-go)
+
+Full suite (bitcoind regtest + mongo + scanner-btc + api/mpc). Reuses sibling `wallet-api-go/scripts` for wait-sync / lock release / health audits.
+
+```powershell
+# Full run
+.\scripts\run_btc_regression.ps1
+
+# Or via npm
+npm run test:btc-regression
+
+# Re-run E2E only (account already funded)
+.\scripts\run_btc_regression.ps1 -SkipConnect -SkipWalletSetup -SkipFund -SkipBitcoindSetup
+```
+
+Individual gates (set `RUN_OPS_WRITE=1 RUN_OPS_SUBMIT=1 RUN_OPS_TRANSFER=1` plus one of):
+
+| Env | npm script | Coverage |
+|-----|------------|----------|
+| `RUN_BTC_TRANSFER_E2E` | `test:btc-transfer` | Transfer + RBF cancel/speed-up |
+| `RUN_BTC_DUST_CHANGE_E2E` | `test:btc-dust` | Dust→fee + scanner fee closed-loop |
+| `RUN_BTC_INTERNAL_TRANSFER_E2E` | `test:btc-internal` | Managed→managed → `internal`(+fee) logs |
+| `RUN_BTC_SUMMARY_MULTI_E2E` | `test:btc-summary-multi` | Multi-payer send+fee trade_log shape |
+| `RUN_BTC_SUMMARY_E2E` | `test:btc-summary` | CreateSummaryTx + mine |
+| `RUN_BTC_BALANCE_AUDIT` | `test:btc-balance-audit` | No negative balances |
+
+Checklist: [`integration/BTC_SCANNER_REGRESSION.md`](integration/BTC_SCANNER_REGRESSION.md).
+
+Also set `TEST_OPS_ACCOUNT_ID` / `TEST_OPS_ADDRESS` for funded account. Optional: `TEST_OPS_DOMAIN`, `TEST_MPC_DOMAIN`, `TEST_APP_KEY`.
 
 ---
 

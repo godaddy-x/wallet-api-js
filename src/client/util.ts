@@ -1,10 +1,7 @@
 import { readFile } from 'node:fs/promises';
 
-import JSONbig from 'json-bigint';
-
+import { jsonBigParse } from '../json/jsonbig.js';
 import type { SdkConfig } from './config.js';
-
-const JSON = JSONbig({ storeAsString: true });
 
 export class WalletApiError extends Error {
   constructor(message: string) {
@@ -21,7 +18,7 @@ export function isNilRequest(value: unknown): boolean {
 
 export async function readSdkConfigFile(path: string): Promise<SdkConfig> {
   const raw = await readFile(path, 'utf8');
-  return JSON.parse(raw) as SdkConfig;
+  return jsonBigParse<SdkConfig>(raw);
 }
 
 export function sdkConfigEnabled(cfg: SdkConfig | undefined): boolean {

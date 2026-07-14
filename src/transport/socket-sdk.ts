@@ -1,7 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { EventEmitter } from 'node:events';
 
-import JSONbig from 'json-bigint';
 import WebSocket from 'ws';
 
 import { parseClientNo } from '../client/client-no.js';
@@ -19,6 +18,11 @@ import {
   unixSecond,
 } from '../crypto/canonical.js';
 import { deriveNegotiatedKey, encapsulateToPeer } from '../crypto/mlkem1024.js';
+import {
+  jsonBigParse,
+  jsonBigStringify,
+  jsonWireStringify,
+} from '../json/jsonbig.js';
 import type { AuthToken, JsonBody, JsonResp } from '../protocol/envelope.js';
 import { planRequiresOuterSignature } from '../protocol/envelope.js';
 import {
@@ -35,9 +39,6 @@ import {
   checkPublicKey,
   verifyResponseTime,
 } from '../protocol/public-key.js';
-
-const JSON = JSONbig({ storeAsString: true });
-const JSONWire = JSONbig({ useNativeBigInt: true });
 
 export interface SocketSdkOptions {
   domain: string;
@@ -261,7 +262,7 @@ export class SocketSDK extends EventEmitter {
   private handleMessage(raw: WebSocket.RawData): void {
     let resp: JsonResp;
     try {
-      resp = JSON.parse(raw.toString()) as JsonResp;
+      resp = jsonBigParse<JsonResp>(raw.toString());
     } catch {
       return;
     }
@@ -300,7 +301,7 @@ export class SocketSDK extends EventEmitter {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       throw new Error('WebSocket not connected');
     }
-    const payload = JSONWire.stringify(body);
+    const payload = jsonWireStringify(body);
     if (waitResponse) {
       const promise = this.waitForResponse(body.n, timeoutSec);
       this.ws.send(payload);
@@ -345,7 +346,7 @@ export class SocketSDK extends EventEmitter {
     verifyPlan2ResponseHmac(keyRouter, resp, this.clientNo, new Uint8Array(0));
     await verifyPlan2ResponseOuterSign(keyRouter, resp, this.clientNo, this.serverPub);
 
-    const serverPub = JSON.parse(Buffer.from(resp.d, 'base64').toString('utf8')) as Awaited<
+    const serverPub = jsonBigParse(Buffer.from(resp.d, 'base64').toString('utf8')) as Awaited<
       ReturnType<typeof createPublicKeyPayload>
     >;
     await checkPublicKey(serverPub, this.serverPub);
@@ -383,7 +384,7 @@ export class SocketSDK extends EventEmitter {
     if (decrypted.length === 0) {
       throw new Error('response data is empty');
     }
-    return JSON.parse(decrypted.toString('utf8')) as TRes;
+    return jsonBigParse<TRes>(decrypted.toString('utf8'));
   }
 
   async loginByWebSocketPlan2Auto<TLoginReq>(
@@ -429,7 +430,7 @@ export class SocketSDK extends EventEmitter {
       p: encryptRequest ? 1 : 0,
       u: this.clientNo,
     };
-    const jsonData = Buffer.from(JSON.stringify(requestObj));
+    const jsonData = Buffer.from(jsonWireStringify(requestObj));
     const secret = this.tokenSecretBytes();
     if (jsonBody.p === 1) {
       jsonBody.d = await aesGcmEncryptBase64(
@@ -479,7 +480,7 @@ export class SocketSDK extends EventEmitter {
     } else {
       decrypted = Buffer.from(resp.d, 'base64');
     }
-    return JSON.parse(decrypted.toString('utf8')) as T;
+    return jsonBigParse<T>(decrypted.toString('utf8'));
   }
 
   private async verifyOuterSign(router: string, resp: JsonResp): Promise<void> {
@@ -498,7 +499,7 @@ export class SocketSDK extends EventEmitter {
       u: this.clientNo,
     };
     const secret = this.tokenSecretBytes();
-    const payload = Buffer.from(JSON.stringify('auth_handshake'));
+    const payload = Buffer.from(jsonBigStringify('auth_handshake'));
     jsonBody.d = await aesGcmEncryptBase64(
       payload,
       secret.subarray(0, 32),
@@ -550,7 +551,7 @@ export class SocketSDK extends EventEmitter {
   private async sendHeartbeat(): Promise<void> {
     const secret = this.tokenSecretBytes();
     const jsonBody: JsonBody = {
-      d: Buffer.from(JSON.stringify('ping')).toString('base64'),
+      d: Buffer.from(jsonBigStringify('ping')).toString('base64'),
       n: getMessageNonce(),
       s: '',
       r: '/ws/ping',

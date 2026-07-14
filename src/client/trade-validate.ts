@@ -1,3 +1,4 @@
+import { jsonBigStringify } from '../json/jsonbig.js';
 import type { RawTransaction } from '../types/trade.js';
 
 function trim(value: string): string {
@@ -66,7 +67,7 @@ function validateExactPendingOutputs(
   if (found.size !== wantLines.size) {
     for (const line of wantLines) {
       if (!found.has(line)) {
-        throw new Error(`missing tx.To entry "${line}" in ${JSON.stringify(tx.txTo)}`);
+        throw new Error(`missing tx.To entry "${line}" in ${jsonBigStringify(tx.txTo)}`);
       }
     }
   }
@@ -114,7 +115,7 @@ function validateBTCPendingOutputs(tx: RawTransaction, to: Record<string, string
 
   for (const addr of want.keys()) {
     if (!found.has(addr)) {
-      throw new Error(`missing tx.To entry for "${addr}" in ${JSON.stringify(tx.txTo)}`);
+      throw new Error(`missing tx.To entry for "${addr}" in ${jsonBigStringify(tx.txTo)}`);
     }
   }
   if (extraLines.length > 1) {

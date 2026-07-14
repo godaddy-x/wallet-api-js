@@ -5,3 +5,6 @@ dist/
 .env
 .env.*
 .idea/
+integration/BTC_SCANNER_REGRESSION.md
+scripts/
+integration/

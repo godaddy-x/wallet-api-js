@@ -22,6 +22,15 @@
     "test": "npm run build && node --import tsx --test test/client.test.ts test/log-watch.test.ts test/trade-hook.test.ts test/app-login-sign.test.ts",
     "test:integration": "npm run build && node --import tsx --test integration/connect.test.ts",
     "test:btc-wallet-address": "npm run build && node --import tsx scripts/run-btc-wallet-address.mts",
+    "test:btc-transfer": "npm run build && node --import tsx --test integration/btc-transfer.e2e.test.ts",
+    "test:btc-dust": "npm run build && node --import tsx --test integration/btc-dust-change.e2e.test.ts",
+    "test:btc-internal": "npm run build && node --import tsx --test integration/btc-internal-transfer.e2e.test.ts",
+    "test:btc-summary-multi": "npm run build && node --import tsx --test integration/btc-summary-multi.e2e.test.ts",
+    "test:btc-summary": "npm run build && node --import tsx --test integration/btc-summary.e2e.test.ts",
+    "test:btc-balance-audit": "npm run build && node --import tsx --test integration/btc-balance-audit.test.ts",
+    "test:btc-listen": "npm run build && node --import tsx --test integration/btc-listen.test.ts",
+    "test:btc-smoke": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run_btc_smoke.ps1",
+    "test:btc-regression": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run_btc_regression.ps1",
     "prepublishOnly": "npm run build"
   },
   "engines": {

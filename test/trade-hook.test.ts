@@ -8,6 +8,7 @@ import {
   validatePendingDataSignHook,
   runTradeCreatedHooks,
 } from '../src/client/trade-hook.js';
+import { jsonBigStringify } from '../src/json/jsonbig.js';
 import type { CreateTradeReq, PendingSignTx } from '../src/types/index.js';
 
 test('validateCreateTradeRequestHook matches transfer request', () => {
@@ -17,7 +18,7 @@ test('validateCreateTradeRequestHook matches transfer request', () => {
     account: { accountID: 'acc-1' },
     txTo: ['0xabc:0.01'],
   };
-  const pending: PendingSignTx = { data: JSON.stringify(raw) };
+  const pending: PendingSignTx = { data: jsonBigStringify(raw) };
   const req: CreateTradeReq = {
     sid: 'sid-1',
     accountID: 'acc-1',
@@ -54,7 +55,7 @@ test('validateCreateTradeRequestHook allows BTC change output', () => {
       'bcrt1qay6v8dmyqu6lu6z448fx9re0c5nzy2ye22shua:41.79989000',
     ],
   };
-  const pending: PendingSignTx = { data: JSON.stringify(raw) };
+  const pending: PendingSignTx = { data: jsonBigStringify(raw) };
   const req: CreateTradeReq = {
     sid: 'sid-btc',
     accountID: 'acc-1',

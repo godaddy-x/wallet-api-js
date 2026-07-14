@@ -1,7 +1,5 @@
 import { createHmac } from 'node:crypto';
 
-import JSONbig from 'json-bigint';
-
 import {
   aesGcmDecryptBase64,
   aesGcmEncryptBase64,
@@ -13,13 +11,12 @@ import {
   unixSecond,
 } from '../crypto/canonical.js';
 import { signWithPrivateKey, verifyWithPublicKey } from '../crypto/mldsa87.js';
+import { jsonWireStringify } from '../json/jsonbig.js';
 import type { JsonBody, JsonResp } from './envelope.js';
 import {
   jsonBodyRequiresOuterSignature,
   planRequiresOuterSignature,
 } from './envelope.js';
-
-const JSONWire = JSONbig({ useNativeBigInt: true });
 
 export type Plan2ClientNo = number | bigint;
 
@@ -114,7 +111,7 @@ export async function buildPlan2KeyRequestJsonBody(params: {
   payload: unknown;
 }): Promise<JsonBody> {
   const jsonBody: JsonBody = {
-    d: Buffer.from(JSONWire.stringify(params.payload)).toString('base64'),
+    d: Buffer.from(jsonWireStringify(params.payload)).toString('base64'),
     n: getMessageNonce(),
     s: '',
     r: params.router,
@@ -150,7 +147,7 @@ export async function buildPlan2EncryptedJsonBody(params: {
   sharedKey: Uint8Array;
   requestObj: unknown;
 }): Promise<JsonBody> {
-  const plaintext = Buffer.from(JSONWire.stringify(params.requestObj));
+  const plaintext = Buffer.from(jsonWireStringify(params.requestObj));
   return buildPlan2JsonBody({
     router: params.router,
     plan: 2,
@@ -217,7 +214,7 @@ export async function decryptPlan2Response(
 }
 
 export function stringifyPublicKeyPayload(payload: unknown): string {
-  return JSONWire.stringify(payload);
+  return jsonWireStringify(payload);
 }
 
 export { toCanonicalUsr };

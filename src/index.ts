@@ -54,3 +54,10 @@ export type {
 } from './types/index.js';
 export type { AuthToken, JsonBody, JsonResp } from './protocol/envelope.js';
 export { SocketSDK } from './transport/socket-sdk.js';
+export {
+  jsonBig,
+  jsonWire,
+  jsonBigParse,
+  jsonBigStringify,
+  jsonWireStringify,
+} from './json/jsonbig.js';

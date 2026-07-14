@@ -1,6 +1,7 @@
 import { createHmac } from 'node:crypto';
 
 import { compareBase64Sign } from '../crypto/canonical.js';
+import { jsonBigParse } from '../json/jsonbig.js';
 import type {
   CancelTransferTradeReq,
   CreateSummaryTxReq,
@@ -58,7 +59,7 @@ export function decodeRaw(ctx: TradeCreatedContext): RawTransaction {
     throw new Error('pendingSignTx.data is empty');
   }
   try {
-    return JSON.parse(pending.data) as RawTransaction;
+    return jsonBigParse<RawTransaction>(pending.data);
   } catch (error) {
     throw new Error(`unmarshal raw tx: ${error instanceof Error ? error.message : String(error)}`);
   }
@@ -70,7 +71,7 @@ export function decodeSmart(ctx: TradeCreatedContext): SmartContractRawTransacti
     throw new Error('pendingSignTx.data is empty');
   }
   try {
-    return JSON.parse(pending.data) as SmartContractRawTransaction;
+    return jsonBigParse<SmartContractRawTransaction>(pending.data);
   } catch (error) {
     throw new Error(
       `unmarshal smart contract tx: ${error instanceof Error ? error.message : String(error)}`,
@@ -83,7 +84,7 @@ function decodePendingRaw(pending: PendingSignTx): RawTransaction {
     throw new Error('pendingSignTx.data is empty');
   }
   try {
-    return JSON.parse(pending.data) as RawTransaction;
+    return jsonBigParse<RawTransaction>(pending.data);
   } catch (error) {
     throw new Error(`unmarshal raw tx: ${error instanceof Error ? error.message : String(error)}`);
   }

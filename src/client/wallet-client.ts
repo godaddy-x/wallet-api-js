@@ -12,7 +12,7 @@ import {
   isNilRequest,
 } from './util.js';
 import { newLongLivedSocket, signTransaction } from './socket.js';
-import { clampPageLimit } from './pager.js';
+import { clampPageLimit, coerceWireInt64Fields } from './pager.js';
 import {
   INCREMENTAL_PAGE_SIZE,
   incrementalNextCursor,
